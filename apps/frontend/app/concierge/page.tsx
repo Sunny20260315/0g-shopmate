@@ -2,39 +2,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { walletService } from '@/app/lib/wallet';
+import { authService } from '@/app/lib/auth';
+import { sendChatMessage, type ChatProduct } from '@/app/lib/api';
 
-// 生成模拟哈希
+// 生成模拟哈希（仅在 0G 存证不可用时使用）
 const generateHash = () => {
   return '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 };
-
-// 模拟商品数据
-const mockProducts = [
-  {
-    id: 1,
-    name: '黑色连帽卫衣',
-    price: 299,
-    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=black%20hoodie%20with%20minimal%20design&image_size=square',
-    hash: generateHash(),
-    reason: '基于您的浏览历史，这款卫衣的设计风格符合您的偏好',
-  },
-  {
-    id: 2,
-    name: '白色运动鞋',
-    price: 499,
-    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=white%20sneakers%20modern%20design&image_size=square',
-    hash: generateHash(),
-    reason: '这款运动鞋在多个平台上评价良好，价格合理',
-  },
-  {
-    id: 3,
-    name: '蓝色牛仔裤',
-    price: 399,
-    image: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=blue%20jeans%20classic%20fit&image_size=square',
-    hash: generateHash(),
-    reason: '经典款式，适合多种场合穿着',
-  },
-];
 
 // ReAct 步进器状态
 const reactSteps = [
@@ -140,47 +114,80 @@ export default function Concierge() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 模拟AI响应
-  const handleSend = () => {
+  // 发送消息给 AI 购物助手
+  const handleSend = async () => {
     if (!input.trim() && !uploadedImage) return;
 
-    // 添加用户消息
+    // 检查登录状态
+    if (!authService.isAuthenticated()) {
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        type: 'ai',
+        content: '请先连接钱包并登录后再使用 AI 购物助手。',
+      }]);
+      return;
+    }
+
+    // 添加用户消息到界面
     const userMessage = {
       id: Date.now(),
       type: 'user',
       content: input,
       image: uploadedImage,
     };
-    setMessages([...messages, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    const userInput = input;
     setInput('');
     setUploadedImage(null);
 
-    // 模拟AI思考过程
+    // 启动 ReAct 步进动画（保留 demo 效果）
     setIsTyping(true);
     setCurrentReactStep(0);
-
-    // 模拟ReAct步进
     const stepInterval = setInterval(() => {
       setCurrentReactStep(prev => {
-        if (prev < reactSteps.length - 1) {
-          return prev + 1;
-        } else {
-          clearInterval(stepInterval);
-          // 完成后生成AI回复
-          setTimeout(() => {
-            const aiMessage = {
-              id: Date.now() + 1,
-              type: 'ai',
-              content: '根据您的需求，我为您推荐了以下商品。这些商品已经通过0G存储验证，确保真实性和数据主权。',
-              products: mockProducts,
-            };
-            setMessages(prev => [...prev, aiMessage]);
-            setIsTyping(false);
-          }, 1000);
-          return prev;
-        }
+        if (prev < reactSteps.length - 2) return prev + 1;
+        clearInterval(stepInterval);
+        return prev;
       });
-    }, 1000);
+    }, 800);
+
+    try {
+      // 调用后端 AI 接口
+      const response = await sendChatMessage(userInput);
+
+      // 步进到最后一步
+      clearInterval(stepInterval);
+      setCurrentReactStep(reactSteps.length - 1);
+
+      // 把 AI 推荐的商品转换为前端展示格式
+      const products = response.products.map((p: ChatProduct, i: number) => ({
+        id: i + 1,
+        name: p.name,
+        price: p.price,
+        image: `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(p.name)}&image_size=square`,
+        hash: response.proof?.dataRoot || generateHash(),
+        reason: p.reason,
+      }));
+
+      // 添加 AI 回复
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1,
+          type: 'ai',
+          content: response.text,
+          products: products.length > 0 ? products : undefined,
+        }]);
+        setIsTyping(false);
+      }, 500);
+    } catch (error: any) {
+      clearInterval(stepInterval);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: `出错了：${error.message}。请检查后端是否启动。`,
+      }]);
+      setIsTyping(false);
+    }
   };
 
   // 处理图片上传

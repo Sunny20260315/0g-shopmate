@@ -44,6 +44,9 @@ importers:
       ethers:
         specifier: ^6.16.0
         version: 6.16.0
+      openai:
+        specifier: ^6.32.0
+        version: 6.32.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

@@ -2,115 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { walletService } from '@/app/lib/wallet';
+import { authService } from '@/app/lib/auth';
+import {
+  getPreferences,
+  deletePreference,
+  updatePreference,
+  type PreferenceItem,
+} from '@/app/lib/api';
 
-// 模拟数据
-const mockData = {
-  preferences: [
-    {
-      id: 1,
-      type: 'Size',
-      value: 'M',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-20T10:30:00Z',
-      monetized: true,
-      earnings: 12.5
-    },
-    {
-      id: 2,
-      type: 'Brand',
-      value: 'Nike, Adidas',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-19T14:20:00Z',
-      monetized: false,
-      earnings: 0
-    },
-    {
-      id: 3,
-      type: 'Color',
-      value: 'Black, White, Gray',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-18T09:15:00Z',
-      monetized: true,
-      earnings: 8.3
-    },
-    {
-      id: 4,
-      type: 'Price Range',
-      value: '¥200-¥500',
-      category: 'Shopping',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-17T16:45:00Z',
-      monetized: true,
-      earnings: 5.7
-    },
-    {
-      id: 5,
-      type: 'Material',
-      value: 'Cotton, Wool',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-16T11:20:00Z',
-      monetized: false,
-      earnings: 0
-    },
-    {
-      id: 6,
-      type: 'Style',
-      value: 'Minimal, Casual',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-15T13:10:00Z',
-      monetized: true,
-      earnings: 10.2
-    },
-    {
-      id: 7,
-      type: 'Brand Ban',
-      value: 'Fast Fashion Brands',
-      category: 'Preferences',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-14T15:50:00Z',
-      monetized: false,
-      earnings: 0
-    },
-    {
-      id: 8,
-      type: 'Occasion',
-      value: 'Work, Casual',
-      category: 'Fashion',
-      hash: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-      created: '2026-03-13T10:00:00Z',
-      monetized: true,
-      earnings: 6.8
-    }
-  ],
-  earnings: [
-    {
-      id: 1,
-      date: '2026-03-25',
-      amount: 2.5,
-      source: 'Brand A',
-      status: 'Completed'
-    },
-    {
-      id: 2,
-      date: '2026-03-24',
-      amount: 3.2,
-      source: 'Brand B',
-      status: 'Completed'
-    },
-    {
-      id: 3,
-      date: '2026-03-23',
-      amount: 1.8,
-      source: 'Brand C',
-      status: 'Pending'
-    }
-  ]
-};
+// 收益数据暂时保持 mock（依赖合约集成）
+const mockEarnings = [
+  { id: 1, date: '2026-03-25', amount: 2.5, source: 'Brand A', status: 'Completed' },
+  { id: 2, date: '2026-03-24', amount: 3.2, source: 'Brand B', status: 'Completed' },
+  { id: 3, date: '2026-03-23', amount: 1.8, source: 'Brand C', status: 'Pending' },
+];
 
 // 内联 SVG 图标
 const SettingsIcon = () => (
@@ -193,42 +98,61 @@ const BurnAnimation = ({ onComplete }: any) => {
 export default function DataVault() {
   const [selectedPreference, setSelectedPreference] = useState<any>(null);
   const [isBurning, setIsBurning] = useState(false);
-  const [preferences, setPreferences] = useState(mockData.preferences);
-  
-  // 处理偏好选择
+  const [preferences, setPreferences] = useState<PreferenceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 从后端加载偏好数据
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      getPreferences()
+        .then(data => setPreferences(data))
+        .catch(err => console.error('Failed to load preferences:', err))
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
   const handleSelectPreference = (pref: any) => {
     setSelectedPreference(pref);
   };
-  
-  // 处理销毁数据
-  const handleBurnData = () => {
-    if (selectedPreference) {
-      setIsBurning(true);
-      // 模拟销毁过程
+
+  // 销毁数据 — 调后端 DELETE API
+  const handleBurnData = async () => {
+    if (!selectedPreference) return;
+    setIsBurning(true);
+    try {
+      await deletePreference(selectedPreference.id);
+      // 等动画播放完再移除
       setTimeout(() => {
-        setPreferences(prev => prev.filter(pref => pref.id !== selectedPreference.id));
+        setPreferences(prev => prev.filter(p => p.id !== selectedPreference.id));
         setSelectedPreference(null);
         setIsBurning(false);
-      }, 3000);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to delete preference:', err);
+      setIsBurning(false);
     }
   };
-  
-  // 处理变现授权
-  const handleMonetize = () => {
-    if (selectedPreference) {
-      setPreferences(prev => prev.map(pref => 
-        pref.id === selectedPreference.id ? { ...pref, monetized: true } : pref
-      ));
-      setSelectedPreference({ ...selectedPreference, monetized: true });
+
+  // 变现授权 — 调后端 PATCH API
+  const handleMonetize = async () => {
+    if (!selectedPreference) return;
+    try {
+      const updated = await updatePreference(selectedPreference.id, { monetized: !selectedPreference.monetized });
+      setPreferences(prev => prev.map(p => p.id === updated.id ? updated : p));
+      setSelectedPreference(updated);
+    } catch (err) {
+      console.error('Failed to update preference:', err);
     }
   };
-  
+
   // 计算总收益
   const totalEarnings = preferences.reduce((sum: number, pref: any) => sum + pref.earnings, 0);
-  
+
   // 从钱包服务获取地址
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const unsubscribe = walletService.onStateChange((state) => {
       setWalletAddress(state.address);
@@ -342,7 +266,7 @@ export default function DataVault() {
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-sm font-medium mb-2">Recent Rewards</h3>
-                    {mockData.earnings.map((earning: any) => (
+                    {mockEarnings.map((earning: any) => (
                       <div key={earning.id} className="flex items-center justify-between p-3 bg-secondary rounded-md">
                         <div>
                           <p className="font-medium">{earning.source}</p>

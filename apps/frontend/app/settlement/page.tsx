@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { walletService } from '@/app/lib/wallet';
+import { settlementService } from '@/app/lib/settlement';
 
 // 模拟数据
 const mockTransactions = [
@@ -139,24 +140,67 @@ const ArrowDownLeftIcon = () => (
 export default function Settlement() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [transactions] = useState(mockTransactions);
-  
-  // 计算总余额
+  const [onChainBalance, setOnChainBalance] = useState<string>('0');
+  const [onChainEvents, setOnChainEvents] = useState<any[]>([]);
+  const [isPaying, setIsPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [paySuccess, setPaySuccess] = useState<string | null>(null);
+
+  // 计算 mock 总余额
   const totalBalance = transactions.reduce((sum: number, tx: any) => sum + tx.amount, 0);
-  
-  // 处理交易选择
+
   const handleSelectTransaction = (tx: any) => {
     setSelectedTransaction(tx);
   };
-  
-  // 从钱包服务获取地址
+
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const unsubscribe = walletService.onStateChange((state) => {
       setWalletAddress(state.address);
     });
     return unsubscribe;
   }, []);
+
+  // 🔑 加载链上数据：Agent 余额 + 历史交易事件
+  useEffect(() => {
+    if (!walletAddress || !settlementService.isConfigured()) return;
+
+    const loadChainData = async () => {
+      try {
+        const balance = await settlementService.getAgentBalance(walletAddress);
+        setOnChainBalance(balance);
+        const events = await settlementService.getPaymentEvents();
+        setOnChainEvents(events);
+      } catch (err) {
+        console.error('Failed to load on-chain data:', err);
+      }
+    };
+
+    loadChainData();
+  }, [walletAddress]);
+
+  // 🔑 向 Agent 支付（真实链上交易，MetaMask 弹窗）
+  const handlePayToAgent = async () => {
+    if (!walletAddress) return;
+    setIsPaying(true);
+    setPayError(null);
+    setPaySuccess(null);
+    try {
+      // 用当前钱包地址作为 Agent（demo 用途）
+      const tx = await settlementService.payToAgent(walletAddress, '0.001');
+      setPaySuccess(`交易已提交: ${tx.hash.slice(0, 16)}...`);
+      // 等交易确认后刷新余额
+      await tx.wait();
+      const balance = await settlementService.getAgentBalance(walletAddress);
+      setOnChainBalance(balance);
+      setPaySuccess(`交易确认成功！新余额: ${balance} 0G`);
+    } catch (err: any) {
+      setPayError(err.message?.includes('user rejected') ? '用户取消了交易' : err.message || 'Payment failed');
+    } finally {
+      setIsPaying(false);
+    }
+  };
   
   const truncatedAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Not connected';
   
@@ -170,22 +214,36 @@ export default function Settlement() {
               <p className="text-muted-foreground">Automated transaction and rewards distribution</p>
             </div>
             
-            {/* 余额卡片 */}
+            {/* 余额卡片 — 链上 + Mock */}
             <div className="glass p-6 rounded-xl mb-8">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Total Balance</h2>
-                  <p className="text-4xl font-bold">{totalBalance.toFixed(2)} 0G</p>
+                  <h2 className="text-xl font-semibold mb-2">On-Chain Balance</h2>
+                  <p className="text-4xl font-bold">{onChainBalance} 0G</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Mock balance: {totalBalance.toFixed(2)} 0G
+                    {settlementService.isConfigured() && (
+                      <span className="ml-2 text-green-500">● Contract connected</span>
+                    )}
+                  </p>
                 </div>
-                <div className="flex gap-4">
-                  <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:neon-glow transition-all flex items-center gap-2">
-                    <ArrowUpRightIcon />
-                    Send
-                  </button>
-                  <button className="px-4 py-2 border border-border rounded-md hover:border-primary transition-all flex items-center gap-2">
-                    <ArrowDownLeftIcon />
-                    Receive
-                  </button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-4">
+                    <button
+                      onClick={handlePayToAgent}
+                      disabled={isPaying || !walletAddress}
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:neon-glow transition-all flex items-center gap-2 disabled:opacity-50"
+                    >
+                      <ArrowUpRightIcon />
+                      {isPaying ? 'Sending...' : 'Pay 0.001 0G'}
+                    </button>
+                    <button className="px-4 py-2 border border-border rounded-md hover:border-primary transition-all flex items-center gap-2">
+                      <ArrowDownLeftIcon />
+                      Receive
+                    </button>
+                  </div>
+                  {payError && <span className="text-xs text-red-400">{payError}</span>}
+                  {paySuccess && <span className="text-xs text-green-400">{paySuccess}</span>}
                 </div>
               </div>
             </div>

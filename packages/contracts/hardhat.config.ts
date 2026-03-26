@@ -22,9 +22,9 @@ const config: HardhatUserConfig = {
   },
   networks: {
     testnet: {
-      url: process.env.NEXT_PUBLIC_0G_RPC_URL!,
-      accounts: [process.env.PRIVATE_KEY!],
-      chainId: 16602, // 0G 测试网 Chain ID
+      url: configVariable('NEXT_PUBLIC_0G_CHAIN_RPC'),
+      accounts: [configVariable('PRIVATE_KEY')],
+      chainId: 16602,
       type: 'http',
     },
   },
