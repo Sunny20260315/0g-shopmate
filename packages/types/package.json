@@ -1,0 +1,43 @@
+{
+  "name": "@shopmate/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types and interfaces",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./chat": {
+      "import": "./dist/chat.mjs",
+      "require": "./dist/chat.js",
+      "types": "./dist/chat.d.ts"
+    },
+    "./user": {
+      "import": "./dist/user.mjs",
+      "require": "./dist/user.js",
+      "types": "./dist/user.d.ts"
+    },
+    "./blockchain": {
+      "import": "./dist/blockchain.mjs",
+      "require": "./dist/blockchain.js",
+      "types": "./dist/blockchain.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}

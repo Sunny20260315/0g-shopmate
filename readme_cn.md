@@ -64,7 +64,7 @@ Category: Track 3 - Agentic Economy & Autonomous Applications
 
     0G 集成: 大规模市场数据镜像存储在 0G Storage，通过 0G DA 确保数据的实时性与可用性，供 AI 模型进行波段分析。
 
-3.  🛡 个人隐私与数据面板 (Data Sovereignty)
+3.  🛡 市场与深度分析 (Data Sovereignty)
 
     功能: 用户可以查看、导出或一键销毁存储在 0G 上的偏好数据。
 

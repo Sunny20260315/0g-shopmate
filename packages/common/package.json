@@ -1,0 +1,64 @@
+{
+  "name": "@shopmate/common",
+  "version": "1.0.0",
+  "description": "Shared utilities, constants, and helpers",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./logger": {
+      "import": "./dist/logger.mjs",
+      "require": "./dist/logger.js",
+      "types": "./dist/logger.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/constants.mjs",
+      "require": "./dist/constants.js",
+      "types": "./dist/constants.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.js",
+      "types": "./dist/utils.d.ts"
+    },
+    "./0g": {
+      "import": "./dist/0g/index.mjs",
+      "require": "./dist/0g/index.js",
+      "types": "./dist/0g/index.d.ts"
+    },
+    "./0g/storage": {
+      "import": "./dist/0g/storage.mjs",
+      "require": "./dist/0g/storage.js",
+      "types": "./dist/0g/storage.d.ts"
+    },
+    "./0g/client": {
+      "import": "./dist/0g/client.mjs",
+      "require": "./dist/0g/client.js",
+      "types": "./dist/0g/client.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@0gfoundation/0g-ts-sdk": "^1.2.1",
+    "@shopmate/types": "workspace:*",
+    "ethers": "^6.16.0",
+    "openai": "^6.32.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3"
+  }
+}

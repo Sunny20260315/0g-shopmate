@@ -1,0 +1,80 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "**/.env.local",
+    "**/.env"
+  ],
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "description": "Build application",
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "next.config.*",
+        "nest-cli.json"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "*.log"
+      ],
+      "cache": true,
+      "env": [
+        "NODE_ENV"
+      ]
+    },
+    "dev": {
+      "description": "Start development server",
+      "cache": false,
+      "interactive": true
+    },
+    "lint": {
+      "description": "Run linter",
+      "outputs": [
+        "node_modules/.cache/.eslintcache"
+      ],
+      "cache": true
+    },
+    "lint:fix": {
+      "description": "Fix all linting issues",
+      "cache": false
+    },
+    "format": {
+      "description": "Format code with prettier",
+      "cache": false
+    },
+    "type-check": {
+      "description": "Run TypeScript type checking",
+      "cache": true,
+      "outputs": [
+        "node_modules/.cache/tsc"
+      ]
+    },
+    "test": {
+      "description": "Run tests",
+      "cache": true,
+      "inputs": [
+        "src/**",
+        "test/**",
+        "package.json"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "test:watch": {
+      "description": "Run tests in watch mode",
+      "cache": false,
+      "interactive": true
+    },
+    "clean": {
+      "description": "Remove build artifacts",
+      "cache": false
+    }
+  }
+}
