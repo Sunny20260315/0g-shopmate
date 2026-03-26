@@ -23,8 +23,10 @@ async function bootstrap() {
   );
 
   // CORS 配置
+  // 🔑 不能用 * + credentials:true，浏览器会直接拒绝
+  // 支持逗号分隔多个 origin，如 CORS_ORIGIN=http://localhost:3000,http://localhost:3001
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
     credentials: true,
   });
 

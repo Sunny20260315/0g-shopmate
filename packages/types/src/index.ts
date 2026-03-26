@@ -1,6 +1,7 @@
 export * from './chat';
 export * from './user';
 export * from './blockchain';
+export * from './auth';
 
 // 用户购物偏好类型
 export interface ShopPreference {

@@ -1,12 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-interface SidebarProps {
-  currentPage?: string;
-}
-
-// 内联 SVG 图标
 const ChevronLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="15 18 9 12 15 6"></polyline>
@@ -63,15 +60,21 @@ const navItems = [
   { href: '/settlement', label: 'Settlement', icon: DollarSignIcon },
 ];
 
-export default function Sidebar({ currentPage }: SidebarProps) {
+export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  };
 
   return (
     <aside className={`glass ${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 flex flex-col`}>
       <div className="p-4 flex justify-between items-center">
         <h2 className={`font-semibold ${isCollapsed ? 'hidden' : 'block'}`}>Navigation</h2>
-        <button 
-          onClick={() => setIsCollapsed(!isCollapsed)} 
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-1 rounded hover:bg-secondary transition-colors"
         >
           {isCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
@@ -80,13 +83,12 @@ export default function Sidebar({ currentPage }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentPage === item.label;
           return (
-            <a
+            <Link
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 p-3 rounded-md transition-colors ${
-                isActive
+                isActive(item.href)
                   ? 'bg-secondary text-primary'
                   : 'hover:bg-secondary'
               }`}
@@ -95,7 +97,7 @@ export default function Sidebar({ currentPage }: SidebarProps) {
                 <Icon />
               </div>
               {!isCollapsed && <span>{item.label}</span>}
-            </a>
+            </Link>
           );
         })}
       </nav>

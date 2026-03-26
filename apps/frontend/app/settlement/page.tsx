@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
+import React, { useState, useEffect } from 'react';
+import { walletService } from '@/app/lib/wallet';
 
 // 模拟数据
 const mockTransactions = [
@@ -149,21 +148,20 @@ export default function Settlement() {
     setSelectedTransaction(tx);
   };
   
-  // 模拟钱包地址
-  const walletAddress = '0x1234567890abcdef1234567890abcdef12345678';
-  const truncatedAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+  // 从钱包服务获取地址
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const unsubscribe = walletService.onStateChange((state) => {
+      setWalletAddress(state.address);
+    });
+    return unsubscribe;
+  }, []);
+  
+  const truncatedAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Not connected';
   
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* 顶部导航栏 */}
-      <TopNav currentPage="Settlement" />
-
-      {/* 主要内容区 */}
-      <main className="flex-1 flex">
-        {/* 侧边栏 */}
-        <Sidebar currentPage="Settlement" />
-
-        {/* 中央内容区 */}
+    <>
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             {/* 页面标题 */}
@@ -379,7 +377,6 @@ export default function Settlement() {
             </div>
           </div>
         </div>
-      </main>
 
       {/* 底部信息栏 */}
       <footer className="glass border-t border-border p-4">
@@ -403,6 +400,6 @@ export default function Settlement() {
           </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

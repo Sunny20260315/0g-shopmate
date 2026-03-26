@@ -41,6 +41,9 @@ importers:
       class-validator:
         specifier: ^0.14.4
         version: 0.14.4
+      ethers:
+        specifier: ^6.16.0
+        version: 6.16.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -120,6 +123,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      ethers:
+        specifier: ^6.16.0
+        version: 6.16.0
       next:
         specifier: 14.2.35
         version: 14.2.35(react-dom@18.3.1)(react@18.3.1)

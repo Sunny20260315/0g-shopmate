@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import TopNav from '@/components/TopNav';
 
 // 内联 SVG 图标
 const ShoppingBagIcon = () => (
@@ -43,9 +42,6 @@ const DollarSignIcon = () => (
 export default function Home() {
   return (
     <div className="min-h-screen relative">
-      {/* 导航栏 */}
-      <TopNav currentPage="Home" />
-
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
@@ -76,7 +72,7 @@ export default function Home() {
             </div>
             <div className="relative">
               <div className="glass p-8 rounded-xl">
-                <BrainIcon className="w-16 h-16 text-primary mb-4" />
+                <BrainIcon  />
                 <h2 className="text-2xl font-semibold mb-2">AI-Powered Shopping</h2>
                 <p className="text-muted-foreground">
                   Our AI assistant helps you find the best products with real-time price comparisons and 0G storage verification.
@@ -94,7 +90,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature 1 */}
             <div className="glass p-6 rounded-xl hover:neon-glow transition-all">
-              <BrainIcon className="w-12 h-12 text-primary mb-4" />
+              <BrainIcon />
               <h3 className="text-xl font-semibold mb-2">AI Concierge</h3>
               <p className="text-muted-foreground">
                 Intelligent shopping assistant with real-time recommendations and price comparisons.
@@ -103,7 +99,7 @@ export default function Home() {
             
             {/* Feature 2 */}
             <div className="glass p-6 rounded-xl hover:neon-glow transition-all">
-              <BarChart3Icon className="w-12 h-12 text-primary mb-4" />
+              <BarChart3Icon  />
               <h3 className="text-xl font-semibold mb-2">Omni-Monitor</h3>
               <p className="text-muted-foreground">
                 Cross-platform asset monitoring with price alerts and 0G storage snapshots.
@@ -112,7 +108,7 @@ export default function Home() {
             
             {/* Feature 3 */}
             <div className="glass p-6 rounded-xl hover:neon-glow transition-all">
-              <LockIcon className="w-12 h-12 text-primary mb-4" />
+              <LockIcon  />
               <h3 className="text-xl font-semibold mb-2">Data Sovereignty</h3>
               <p className="text-muted-foreground">
                 Complete control over your shopping data with encryption and selective monetization.
@@ -121,7 +117,7 @@ export default function Home() {
             
             {/* Feature 4 */}
             <div className="glass p-6 rounded-xl hover:neon-glow transition-all">
-              <DollarSignIcon className="w-12 h-12 text-primary mb-4" />
+              <DollarSignIcon  />
               <h3 className="text-xl font-semibold mb-2">Autonomous Settlement</h3>
               <p className="text-muted-foreground">
                 Automated transactions and rewards distribution with blockchain integration.
@@ -149,7 +145,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-6 md:mb-0">
-              <ShoppingBagIcon className="text-primary" />
+              <ShoppingBagIcon  />
               <h2 className="text-xl font-bold">0G-ShopMate</h2>
             </div>
             <div className="flex flex-wrap gap-6 justify-center">

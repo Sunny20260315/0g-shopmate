@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import TopNav from '@/components/TopNav';
-import Sidebar from '@/components/Sidebar';
+import { walletService } from '@/app/lib/wallet';
 
 // 生成模拟哈希
 const generateHash = () => {
@@ -214,21 +213,20 @@ export default function Concierge() {
     setMessages([]);
   };
 
-  // 模拟钱包地址
-  const walletAddress = '0x1234567890abcdef1234567890abcdef12345678';
-  const truncatedAddress = `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+  // 从钱包服务获取地址
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const unsubscribe = walletService.onStateChange((state) => {
+      setWalletAddress(state.address);
+    });
+    return unsubscribe;
+  }, []);
+  
+  const truncatedAddress = walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Not connected';
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* 顶部导航栏 */}
-      <TopNav currentPage="Concierge" />
-
-      {/* 主要内容区 */}
-      <main className="flex-1 flex">
-        {/* 侧边栏 */}
-        <Sidebar currentPage="Concierge" />
-
-        {/* 中央聊天区 */}
+    <>
         <div className="flex-1 flex flex-col">
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-4xl mx-auto space-y-6">
@@ -396,7 +394,6 @@ export default function Concierge() {
             </svg>
           </button>
         </div>
-      </main>
 
       {/* 底部信息栏 */}
       <footer className="glass border-t border-border p-4">
@@ -482,6 +479,6 @@ export default function Concierge() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
